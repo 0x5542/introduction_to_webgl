@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+
+<head>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<title>Introduction To WebGL - Part I</title>
+
+
+<script id="myVertexShader" type="x-shader/x-vertex">
+
+    attribute vec4 aPos;
+    void main() {
+        gl_Position = aPos;
+    }
+
+</script>
+
+
+
+<script id="myFragmentShader" type="x-shader/x-fragment">
+
+    void main() {
+        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+
+</script>
+
+
+
+<script type="text/javascript">
+
+
+	var gl;
+	var pShader;
+
+
+    window.onload = function () {
+
+        initWebGL();
+        initShaders();
+        drawScene();
+
+    };
+
+
+
+    // src: http://wiki.delphigl.com/index.php/Tutorial_WebGL
+    function getShaderSource(id) {
+        var script = document.getElementById(id);
+        if (!script) { return null; }
+        var source = "";
+        var child = script.firstChild;
+        while (child) {
+            if (child.nodeType == 3) {
+                source += child.textContent;
+            }
+            child = child.nextSibling;
+        }
+        return source;
+    }
+
+
+
+	function initShaders() {
+
+		// loading the source code of the shaders
+        var vShaderQuellcode = getShaderSource("myVertexShader");
+        var fShaderQuellcode = getShaderSource("myFragmentShader");
+
+		// compiling the sources
+        var vShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vShader, vShaderQuellcode);
+        gl.compileShader(vShader);
+
+        var fShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fShader, fShaderQuellcode);
+        gl.compileShader(fShader);
+
+		// creating the shader program
+        pShader = gl.createProgram();
+        gl.attachShader(pShader, vShader);
+        gl.attachShader(pShader, fShader);
+        gl.linkProgram(pShader);
+
+	}
+
+
+
+	function initWebGL() {
+        var canvas = window.document.getElementById("myGlCanvas");
+        gl = canvas.getContext("webgl");
+	}
+
+
+
+	function drawScene() {
+
+        myVertices = new Float32Array([
+    	    0.0,  0.0, 0.0,
+            0.5,  0.0, 0.0,
+            0.5,  0.5, 0.0,
+        ]);
+
+		// Storing the vertex data in a buffer. The buffer type must be "ARRAY_BUFFER".
+        var myVertexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, myVertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, myVertices, gl.STATIC_DRAW);
+
+		// Getting a "pointer" to the attribute variable "aPos" of the vertex shader
+		// of the program "pShader" (each program has only one vertex shader).
+        aPos_AttribLoc = gl.getAttribLocation(pShader, "aPos");
+
+        // Data which lies in an "ARRAY_BUFFER" can be mapped on the attribute variables
+        // of a vertex shader:
+        gl.enableVertexAttribArray(aPos_AttribLoc);
+	    gl.vertexAttribPointer(aPos_AttribLoc, 3, gl.FLOAT, false, 3*4, 0);
+		// this means: each vertex gets 3 floats, so 3*4 bytes altogether (one float is 4 byte).
+
+        gl.clearColor(0.5, 0.5, 0.5, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+		// now we activate the shader program and draw the vertices.
+		gl.useProgram(pShader);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    }
+
+</script>
+</head>
+
+<body>
+<canvas id="myGlCanvas" width="320" height="240"></canvas>
+</body>
+
+</html>
